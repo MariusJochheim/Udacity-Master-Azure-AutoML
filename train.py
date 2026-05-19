@@ -48,8 +48,8 @@ def main():
 
     run = Run.get_context()
 
-    run.log("Regularization Strength:", np.float(args.C))
-    run.log("Max iterations:", np.int(args.max_iter))
+    run.log("Regularization Strength:", float(args.C))
+    run.log("Max iterations:", int(args.max_iter))
 
     # Create TabularDataset using TabularDatasetFactory
     data_url = "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
@@ -69,7 +69,7 @@ def main():
     model = LogisticRegression(C=args.C, max_iter=args.max_iter).fit(x_train, y_train)
 
     accuracy = model.score(x_test, y_test)
-    run.log("Accuracy", np.float(accuracy))
+    run.log("Accuracy", float(accuracy))
 
     os.makedirs("outputs", exist_ok=True)
     joblib.dump(model, "outputs/model.joblib")

@@ -1,7 +1,9 @@
 dependencies:
-  - python=3.6.2
+  - python=3.10
   - scikit-learn
   - numpy
   - pandas
   - pip:
+    - azureml-core
     - azureml-defaults
+    - azureml-dataset-runtime[pandas,fuse]
