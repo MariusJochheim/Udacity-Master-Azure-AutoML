@@ -6,4 +6,3 @@ dependencies:
   - pip:
     - azureml-core
     - azureml-defaults
-    - azureml-dataset-runtime[pandas,fuse]

@@ -8,7 +8,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 import pandas as pd
 from azureml.core.run import Run
-from azureml.data.dataset_factory import TabularDatasetFactory
+
+DATA_URL = "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
 
 def clean_data(data):
     # Dict for cleaning data
@@ -16,7 +17,19 @@ def clean_data(data):
     weekdays = {"mon":1, "tue":2, "wed":3, "thu":4, "fri":5, "sat":6, "sun":7}
 
     # Clean and one hot encode data
-    x_df = data.to_pandas_dataframe().dropna()
+    if isinstance(data, pd.DataFrame):
+        x_df = data.copy()
+    elif isinstance(data, (str, os.PathLike)):
+        x_df = pd.read_csv(data)
+    else:
+        try:
+            x_df = data.to_pandas_dataframe()
+        except TypeError as exc:
+            if "EnginelessDataflow" not in str(exc):
+                raise
+            x_df = pd.read_csv(DATA_URL)
+
+    x_df = x_df.dropna()
     jobs = pd.get_dummies(x_df.job, prefix="job")
     x_df.drop("job", inplace=True, axis=1)
     x_df = x_df.join(jobs)
@@ -51,11 +64,9 @@ def main():
     run.log("Regularization Strength:", float(args.C))
     run.log("Max iterations:", int(args.max_iter))
 
-    # Create TabularDataset using TabularDatasetFactory
-    data_url = "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
-    ds = TabularDatasetFactory.from_delimited_files(path=data_url)
-    
-    x, y = clean_data(ds)
+    # Load the training data directly with pandas. This avoids AzureML dataset
+    # runtime conversion issues when running the script in newer environments.
+    x, y = clean_data(DATA_URL)
 
     # Split data into train and test sets.
     x_train, x_test, y_train, y_test = train_test_split(
